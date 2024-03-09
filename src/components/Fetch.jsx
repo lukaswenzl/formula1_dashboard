@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-
 import { API } from "../openf1_api/api_utility";
 
 const FetchQualiSessions = () => {
@@ -7,7 +6,8 @@ const FetchQualiSessions = () => {
   useEffect(() => {
     //fetch('https://api.openf1.org/v1/sessions?date_start%3E%3D2024-02-01&session_name=Qualifying')
     //fetch(API('sessions?date_start%3E%3D2024-02-01&session_name=Qualifying'))
-    fetch(API('sessions?date_start%3E%3D2024-02-01'))
+    //fetch(API('sessions?date_start%3E%3D2024-02-01'))
+    fetch(API('sessions?session_key=latest'))
       .then((res) => {
         return res.json();
       })
@@ -18,9 +18,9 @@ const FetchQualiSessions = () => {
   }, []);
   return (
     <div>
-      <h2>All sessions since the beginning of 2024:</h2>
+      <h2>Latest Formula 1 Session:</h2>
       {sessions.map((session) => (
-        <p> {session.location} {session.session_name} {session.date_start}</p>
+        <p>{session.session_name} in {session.location} started at {session.date_start}</p>
       ))}
     </div>
   );
