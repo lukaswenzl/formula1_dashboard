@@ -20,6 +20,23 @@ export function FetchSessions () {
   return sessions
 };
 
+export function FetchSpecificSession (currentSession) {
+  const [sessions, setSessions] = useState([]);
+  useEffect(() => {
+    //fetch('https://api.openf1.org/v1/sessions?date_start%3E%3D2024-02-01&session_name=Qualifying')
+    //fetch(API('sessions?date_start%3E%3D2024-02-01&session_name=Qualifying'))
+    fetch(API('sessions?session_key='+currentSession))
+      .then((res) => {
+        return res.json();
+      })
+      .then((data) => {
+        console.log(data);
+        setSessions(data);
+      });
+  }, [currentSession]);
+  return sessions
+};
+
 export function FetchDrivers(currentSession){
   const [drivers, setDrivers] = useState([]);
   useEffect(() => {
