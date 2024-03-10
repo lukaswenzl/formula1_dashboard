@@ -15,13 +15,16 @@ const groupBy = (input, key) => {
   }, {});
 };
 
-const formatLapData = (grouped_data, drivers) => {
+const formatLapData = (grouped_data, drivers, minTime=0, maxTime=10000) => {
   var res = [];
   for(var lap_number in grouped_data) {
     var next_entry = {"lap_number":lap_number};
     for(var j in grouped_data[lap_number]) {
-      var driver_lap = grouped_data[lap_number][j];
-      next_entry[drivers[driver_lap["driver_number"]]] = driver_lap["lap_duration"];
+      let driver_lap = grouped_data[lap_number][j];
+      let lap_time = driver_lap["lap_duration"]
+      if( lap_time >= minTime && lap_time < maxTime) {
+        next_entry[drivers[driver_lap["driver_number"]]] = lap_time ;
+      }
     }
     res.push(next_entry);
   }
@@ -59,12 +62,19 @@ export function LapTimesChart({selectedSession, drivers}) {
         setLaps(data);
       });
   }, [selectedSession]);
+
+  let fastestLap = Math.min(...laps.map((lap) => lap.lap_duration).filter(a => a >0.));
+  //laps.reduce((accumulator, currentValue) => Math.min(accumulator, currentValue.lap_duration),
+  //1000);
+  console.log("Fastest Lap")
+  console.log(fastestLap)
   
   //className="mx-auto max-w-md"
   return (
+    <div>
     <Card>
       <p className="text-lg text-tremor-content-strong dark:text-dark-tremor-content-strong font-semibold">Lap time in seconds for each lap completed </p>
-      <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content leading-6">For each driver labeled by driver number</p>
+      <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content leading-6">Data shown for each driver. This view primarely visualizes pit stops (single lap peaks) and safety car periods (multi lap peaks)</p>
     <LineChart
       className="h-80"
       data={formatLapData(groupBy(laps, 'lap_number'), drivers)}
@@ -72,9 +82,25 @@ export function LapTimesChart({selectedSession, drivers}) {
       categories={uniqueDriverNumbers(laps).map((driver_number) => drivers[driver_number])}
       yAxisWidth={60}
       onValueChange={(v) => console.log(v)}
-      autoMinValue="True"
+      autoMinValue="False"
+      maxValue={150}
     />
     </Card>
+    <Card>
+      <p className="text-lg text-tremor-content-strong dark:text-dark-tremor-content-strong font-semibold">Lap time in seconds for each lap completed (Zoomed in) </p>
+      <p className="text-tremor-default text-tremor-content dark:text-dark-tremor-content leading-6">Here we show the lap time data with a narrow y range. We can see the lap time improvement over time due to the reducing fuel level in the cars. </p>
+    <LineChart
+      className="h-80"
+      data={formatLapData(groupBy(laps, 'lap_number'), drivers, fastestLap, fastestLap*1.1)}
+      index="lap_number"
+      categories={uniqueDriverNumbers(laps).map((driver_number) => drivers[driver_number])}
+      yAxisWidth={120}
+      onValueChange={(v) => console.log(v)}
+      maxValue={fastestLap*1.1}
+      minValue={fastestLap}
+    />
+    </Card>
+    </div>
   );
 }
 
